@@ -53,7 +53,7 @@ $$
 As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. This form lends itself to block-encoding the Hamiltonian as the following:
 
 $$
-\ket{0}_\mathrm{ancilla} \bra{0}_\mathrm{ancilla} H \ket{\psi} = \ket{0}_\mathrm{ancilla} \bra{0}_\mathrm{ancilla} (\mathrm{PREP})^{\dagger} (\mathrm{SELECT}) (\mathrm{PREP}) \ket{0}_\mathrm{ancilla} \ket{\psi}
+\ket{0}_\mathrm{ancilla} \bra{0}_\mathrm{ancilla} H \ket{\psi} = \bra{0}_\mathrm{ancilla} (\mathrm{PREP})^{\dagger} (\mathrm{SELECT}) (\mathrm{PREP}) \ket{0}_\mathrm{ancilla} \ket{0}_\mathrm{ancilla} \ket{\psi},
 $$
 
 where PREP converts the ancilla to the basis of desired strings and SELECT is a block-diagonal unitary that applies the desired string based on the ancilla values.
@@ -75,7 +75,7 @@ qc.ry(2*theta,n)
 
 $\frac{1}{\sqrt{2}} \ket{000000}\ket{00010001} + \frac{1}{\sqrt{2}} \ket{000001}\ket{00010001}$
 
-We have thus encoded the composite amplitude of the Z strings with the state $\ket{0}$ on the rightmost bit, while the composite amplitude of the X and Y strings are encoded with the state $\ket{1}$. To separate the X (i.e., $\ket{01}$) and Y (i.e., $\ket{11}$) strings from each other, we use the fact that the X and Y strings feature identical amplitudes to apply a Hadamard on the second-to-rightmost ancillary bit if the rightmost ancillary bit is 1 (in other words, a control-Hadamard on bit $n+1$ conditioned on bit $n$):
+We have thus encoded the composite amplitude of the $Z$ strings with the state $\ket{0}$ on the rightmost bit, while the composite amplitude of the $X$ and $Y$ strings are encoded with the state $\ket{1}$. To separate the $X$ (i.e., $\ket{01}$) and $Y$ (i.e., $\ket{11}$) strings from each other, we use the fact that the $X$ and $Y$ strings feature identical amplitudes to apply a Hadamard on the second-to-rightmost ancillary bit if the rightmost ancillary bit is 1 (in other words, a control-Hadamard on bit $n+1$ conditioned on bit $n$):
 
 ```python
 qc.ch(n,n+1)
@@ -103,4 +103,10 @@ where $\ket{l}$ is the $m$-bit address for the site $l$.
 
 ### Applying the SELECT Gate
 
-Now that each ancillary bit combination represents a unique string, we are ready to use the SELECT gate. Broadly, this consists of applying the individual strings on the data-bit string $\ket{\psi}$, with the exact string being determined by the ancilla. 
+Since each ancillary bit combination now represents a unique string, we are ready to use the SELECT gate. Broadly, this consists of applying the individual strings on the data-bit string $\ket{\psi}$, with the exact string being determined by the ancilla. Here, we note that the leftmost ancillary bit is used as a placeholder for rotation operators that will be applied later during the Generalized Quantum Signal Processing (GQSP) steps. This finishes the explanation of why we use $m+3$ ancillary bits overall. In preparation for GQSP, we need to use this ancillary bit as an anti-control for the block-encoding process (i.e., the SELECT gate is only applied if the leftmost ancillary bit input is 0). The method we use is to flip this bit and use it as a regular control bit in all SELECT operations:
+
+```python
+qc.x(n+m+2)
+```
+
+The strategy that we will use is to individually set each combination for the $m$-bit ancillary string addressing the physical site (i.e., bits $n+2$ through $n+m+1$) and the 2-bit ancillary string addressing the string type (i.e., bits $n$ and $n+1$) to all 1s, followed by applying the corresponding string to the data bits in a multi-controlled manner conditioned on all ancillary bits. To do this, we run a for loop over all possible combinations in the $m$-bit string, applying an $X$ gate to the $k^\mathrm{th}$ bit in that string (where we are zero-indexing and counting from right to left) every $2^k$ runs (since the $k^\mathrm{th}$ binary digit switches every $2^k$ counts). For a given run corresponding to site $l$, we first apply multi-controlled $Y$ gates to sites $l$ and $l+1$ (since the rightmost 2 ancilla being in the all-1 state corresponds to the $Y$ string type), then we apply the $X$ gate to flip the second-to-rightmost ancillary bit (i.e., bit $n+1$) and apply the multi-controlled $X$ gates to sites $l$ and $l+1$, and finally we apply the $X$ gate to flip the rightmost ancillary bit (i.e., bit $n$) and apply the multi-controlled $Z$ gates to site $l$. Note that we separate out the case $l = n$ from the main for loop, since $l+1 = 0$ in that case, not $n+1$:
