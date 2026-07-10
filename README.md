@@ -254,6 +254,43 @@ In general, $|x| < 1$, since all values in the Hamiltonian (and hence its eigenv
 $$
 \begin{align}
 P(z) &= \sum_{s=0}^d P_s(x) x^s \\
-&= 
+&= \sum_{s=0}^d \frac{1}{2^s} P_s(x) (z + z^{-1})^s \\
+&= \sum_{s=0}^d \frac{1}{2^s} P_s(x) \sum_{j=0}^{s} \frac{s!}{j!(s-j)!} z^{s-2j}
 \end{align}
 $$
+
+From the binomial expansion, we can deduce that any $P_k(z)$ receives contributions from all orders of $P(x)$ at or above $|k|$. This is quantitatively confirmed by defining $k = s - 2j$ and imposing the condition that $0 \leq j \leq s$, corresponding to the requirements that $j \geq 0$ and $j \geq -k$. For non-negative values of $k$, the second requirement is automatically satisfied if the first is satisfied. Moreover, the fact that $P(z)$ is invariant in the reciprocal transformation of $z$ implies that $P_{-k}(z) = P_k(z)$ for all k. This common polynomial coefficient for $k$ and $-k$ thus becomes the following:
+
+$$
+P_|k|(z) = \sum_{j=0}^{\lfloor \frac{d-k}{2} \rfloor} \frac{1}{2^{k+2j}} \frac{(k+2j)!}{j!(k+j)!} P_{k+2j}(x)
+$$
+
+We use a for loop to map the $P(x)$ array onto the $P(z)$ array for non-negative orders, and then we expand the array to append the negative orders:
+
+```python
+pzhold = {}
+
+# Starting with only non-negative values:
+
+pzraw = np.zeros(d+1, dtype=complex)
+
+for k in range(d+1):
+    pzhold[k] = np.zeros(d+1, dtype=complex)
+    for i in range(int(np.floor((d-k)/2))+1):
+        pzhold[k][i] = 1/2**(k+2*i)*sp.special.factorial(k+2*i)/(sp.special.factorial(i)*sp.special.factorial(k+i))*px[k+2*i]
+    pzraw[k] = sum(pzhold[k][i] for i in range(int(np.floor((d-k)/2))+1))
+    
+# Expanding to include negative k values (by symmetry P_{-k}(z) = P_k(z)) and shift from [-d,d] to [0,2d]:
+
+pz = np.zeros(2*d+1, dtype=complex)
+
+for kprime in range(d):
+    k = kprime - d
+    pz[kprime] = pzraw[-k]
+    
+for kprime in range(d,2*d+1):
+    k = kprime - d
+    pz[kprime] = pzraw[k]
+```
+
+# Determining Q(z)
