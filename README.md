@@ -50,7 +50,7 @@ $$
 H = \frac{1}{2} \sum_{l = 0}^{n - 1} \Big(Z_l + X_l X_{l+1} + Y_l Y_{l+1}\Big).
 $$
 
-As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. This form lends itself to expressing the Hamiltonian as $H = (\mathrm{PREP}^{\dagger}) (\mathrm{SELECT}) (\mathrm{PREP})$, where PREP converts the ancilla to the basis of desired strings and SELECT is a block-diagonal unitary that applies the desired string based on the ancilla values.
+As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. This form lends itself to block-encoding the Hamiltonian as $H = (PREP^{\dagger}) (SELECT) (PREP)$, where PREP converts the ancilla to the basis of desired strings and SELECT is a block-diagonal unitary that applies the desired string based on the ancilla values.
 
 ### Applying the PREP Gate
 
