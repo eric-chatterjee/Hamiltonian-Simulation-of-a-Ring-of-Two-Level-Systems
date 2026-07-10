@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib as mpl
 ```
 
-# Problem Statement and Hamiltonian Decomposition
+## Problem Statement and Hamiltonian Decomposition
 
 We seek to simulate the time-evolution of $n$ 2-level sites (e.g. atoms with 2 energy levels, spins), each with energy gap $\hbar \omega$ in a ring with nearest-neighbor coupling $\hbar g$. For purposes of convenience, we will set $\hbar = 1$ throughout this process. If we set the reference energy to halfway between the ground and excited states for each site, then the Hamiltonian takes the following form:
 
@@ -17,3 +17,15 @@ H = \sum_{l = 0}^{n - 1} \bigg(\frac{\omega}{2} \Big(2 a_l^{\dagger} a_l - 1\Big
 $$
 
 where $a_l^{(\dagger)}$ is the annihilation (creation) operator for the site $l$. The first and second terms represent the self-energy of each site and the site-to-site coupling, respectively. Note that for $l = n-1$, the coupling with the site $l+1$ is actually with the $0^\mathrm{th}$ site, since the sites are organized in a ring. 
+
+We will represent the system using $n$ data bits, with the $l^\mathrm{th}$ bit (counting from right to left and zero-indexing) representing the state (ground = 0, excited = 1) of site $l$.
+
+## LCU: Block-Encoding the Hamiltonian
+
+The key step in the simulation process will be to block-encode the Hamiltonian into a unitary operator, which will require us to decompose the Hamiltonian into a linear combination of unitaries. To that end, the nature of $H$ lends itself to decomposition into a linear combination of Pauli strings:
+
+$$
+H = \frac{1}{2} \sum_{l = 0}^{n - 1} \Big(Z_l + X_l X_{l+1} + Y_l Y_{l+1}\Big).
+$$
+
+As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ $Z_l$ strings, $n$ $X_l X_{l+1}$ strings, and $n$ $Y_l Y_{l+1}$ strings.
