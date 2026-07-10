@@ -214,6 +214,8 @@ Having block-encoded the attenuated Hamiltonian $H' = H/\alpha$, we now seek to 
 
 ## References
 
+<a id="motlagh2024"></a> **Motlagh, D., & Wiebe, N. (2024).** "Generalized Quantum Signal Processing." *PRX Quantum*, 5, 020368. [https://doi.org](https://doi.org)
+
 ```bibtex
 @article{motlagh2024gqsp,
   author    = {Motlagh, D. and Wiebe, N.},
