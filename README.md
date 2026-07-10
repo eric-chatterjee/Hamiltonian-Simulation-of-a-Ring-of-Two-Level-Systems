@@ -212,7 +212,7 @@ Having block-encoded the attenuated Hamiltonian $H' = H/\alpha$, we now seek to 
 
 
 
-## Citation
+## References
 
 ```bibtex
 @article{motlagh2024gqsp,
