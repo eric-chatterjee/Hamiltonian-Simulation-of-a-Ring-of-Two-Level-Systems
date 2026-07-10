@@ -253,6 +253,7 @@ In general, $|x| < 1$, since all values in the Hamiltonian (and hence its eigenv
 
 $$
 \begin{align}
-P(z)
+P(z) &= \sum_{s=0}^d P_s(x) x^s \\
+&= 
 \end{align}
 $$
