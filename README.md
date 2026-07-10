@@ -6,6 +6,7 @@ from qiskit.quantum_info import Operator
 from qiskit.quantum_info import Statevector
 import numpy as np
 import matplotlib as mpl
+import scipy as sp
 ```
 
 ## Problem Statement and Hamiltonian Form
@@ -218,4 +219,32 @@ $$
 e^{-ix\tau} = J_0(\tau) + 2 \sum_{k = 1}^\infty (-i)^k J_k(\tau) T_k(x),
 $$
 
-where J_k and T_k are the Bessel and Chebyshev polynomials of the first kind, respectively. To 
+where J_k and T_k are the Bessel and Chebyshev polynomials of the first kind, respectively. In general, T_0(x) = 1, T_1(x) = x, and all higher orders take the recursive form T_{k}(x) = 2xT_{k-1}(x) - T_{k-2}(x). The polynomial decomposition of each T_k can thus be encoded in an array (with the elements corresponding to the ascending range x^0 to x^d) and populated through a recursive for loop:
+
+```python
+t = {}
+
+t[0] = np.array([1] + [0]*d)
+t[1] = np.array([0] + [1] + [0]*(d-1))
+
+for k in range(2,d+1):
+    t[k] = np.array([0]*(d+1)) # Initializing for each n
+    t[k][0] = -t[k-2][0] # Special case for i = 0, since t[n-1][m-1] does not exist for this case
+    for i in range(1,d+1):
+        t[k][i] = 2*t[k-1][i-1] - t[k-2][i]
+```
+
+A corresponding array can be found for the overall $P(x)$ by substituting these Chebyshev polynomials into the Jacobi-Anger expansion above. We map each $T_k$ onto the $k^\mathrm{th}$ term in the Jacobi-Anger expansion through a for loop and then sum over the terms:
+
+```python
+pxhold = {}
+
+pxhold[0] = np.array([sp.special.jv(0,tau)] + [0]*d)
+
+for i in range(1,d+1):
+    pxhold[i] = 2*(-1j)**n*sp.special.jv(i,tau)*t[i]
+    
+px = sum(pxhold[i] for i in range(d+1))
+```
+
+# Converting from P(x) to P(z)
