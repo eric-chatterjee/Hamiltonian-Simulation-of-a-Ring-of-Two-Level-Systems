@@ -38,6 +38,10 @@ qc.x(0)
 qc.x(4)
 ```
 
+<img width="191" height="947" alt="InitialState" src="https://github.com/user-attachments/assets/94a089fe-5d86-4966-988c-eb3a05477913" />
+
+$\ket{000000}\ket{00010001}$
+
 ## LCU: Block-Encoding the Hamiltonian
 
 The key step in the simulation process will be to block-encode the Hamiltonian into a unitary operator, which will require us to decompose the Hamiltonian into a linear combination of unitaries (LCU). To that end, the nature of $H$ lends itself to decomposition into a linear combination of Pauli strings:
@@ -46,4 +50,27 @@ $$
 H = \frac{1}{2} \sum_{l = 0}^{n - 1} \Big(Z_l + X_l X_{l+1} + Y_l Y_{l+1}\Big).
 $$
 
-As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. The amplitudes (square-root of the coefficients) corresponding to these string categories are proportional to $\sqrt{\omega}$, $\sqrt{g}$, and $\sqrt{g}$, respectively. We use the rightmost 2 ancillary bits to represent the string categories, with $\ket{00} \leftrightarrow Z$, $\ket{01} \leftrightarrow X$, and $\ket{11} \leftrightarrow Y$. To encode the string category amplitudes, we apply the rotation operator $R_Y(2\theta)$, where $\theta = \cos^{-1}(\sqrt{\omega}/\sqrt{\omega + 2g})$ on the initial 2-ancillary-bit state $\ket{00}$. 
+As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. The amplitudes (square-root of the coefficients) corresponding to these string categories are proportional to $\sqrt{\omega}$, $\sqrt{g}$, and $\sqrt{g}$, respectively. We use the rightmost 2 ancillary bits to represent the string categories, with $\ket{00} \leftrightarrow Z$, $\ket{01} \leftrightarrow X$, and $\ket{11} \leftrightarrow Y$. If we just consider the rightmost bit (i.e., bit $n$), we thus need an amplitude proportional to $\sqrt{\omega}$ and $\sqrt{2g}$ for the states $\ket{0} and $\ket{1}, respectively. This is encoded by applying the rotation operator $R_Y(2\theta)$, where $\theta = \cos^{-1}(\sqrt{\omega}/\sqrt{\omega + 2g})$, on the rightmost bit. For our case, we define $\omega = 10^{10} \textrm{ s}^{-1}$ and $g = 5 \times 10^9 \textrm{ s}^{-1}$:
+
+```python
+w = 10**10 # self-energy of each site
+g = 5*10**9 # site-site coupling
+
+theta = np.arccos(np.sqrt(w/(w + 2*g))) # desired rotation angle for rightmost bit
+
+qc.ry(2*theta,n)
+```
+
+<img width="191" height="947" alt="AfterFirstRotationGate" src="https://github.com/user-attachments/assets/cd6dcc60-953d-474c-bfb5-bb9d85b2b459" />
+
+$\frac{1}{\sqrt{2}} \ket{000000}\ket{00010001} + \frac{1}{\sqrt{2}} \ket{000001}\ket{00010001}$
+
+We have thus encoded the composite amplitude of the Z strings with the state $\ket{0}$ on the rightmost bit, while the composite amplitude of the X and Y strings are encoded with the state $\ket{1}$. To separate the X (i.e., $\ket{01}$) and Y (i.e., $\ket{11}$) strings from each other, we use the fact that the X and Y strings feature identical amplitudes to apply a Hadamard on the second-to-rightmost ancillary bit if the rightmost ancillary bit is 1 (in other words, a control-Hadamard on bit $n+1$ conditioned on bit $n$):
+
+```python
+qc.ch(n,n+1)
+```
+
+<img width="51" height="563" alt="AfterFirstHadamardGate" src="https://github.com/user-attachments/assets/813ffb73-3550-4274-8d8d-f352ec773efa" />
+
+$\frac{1}{\sqrt{2}} \ket{000000}\ket{00010001} + \frac{1}{2} \ket{000001}\ket{00010001} + \frac{1}{2} \ket{000011}\ket{00010001}$
