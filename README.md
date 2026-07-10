@@ -293,6 +293,8 @@ for kprime in range(d,2*d+1):
     pz[kprime] = pzraw[k]
 ```
 
+It is essential to note that although this array is supposed to represent the range of orders from $-d$ through $d$, the range is actually read by the GQSP protocol as being from $0$ through $2d$. We will correct this at the end of the GQSP protocol by applying the anti-controlled $U^{-d}$ to the output state from the GQSP.
+
 ### Determining Q(z)
 
 To find the coefficients of $Q(z)$ (i.e., the complementary polynomial to $P(z)$), we use the complex polynomial code for the GQSP code file FindingQ.ipynb (https://github.com/Danimhn/GQSP-Code/blob/main/FindingQ.ipynb). The extra input array $x$ features the real and imaginary parts of a guess for the $Q(z)$ coefficients. The code then finds the distance of $|P(z)|^2 + |Q(z)|^2$ from 1, as well as the gradient of this distance over the elements of $x$. It adjusts the $x$ values accordingly until $|P(z)|^2 + |Q(z)|^2$ is within a negligible distance from 1. We modify the code to cut off the order of $Q$ at 64. To accommodate this, we also pad $P(z)$ with zeros up to that cutoff order:
@@ -428,4 +430,26 @@ print(num_iterations)
 
 ### Calculating the Phase Angles
 
-Now that we have the coefficients for both $P(z)$ and $Q(z)$, we can use the GQSP paper's Algorithm 1 to determine which rotation operator we need to apply for every interleaving step. 
+Now that we have the coefficients for both $P(z)$ and $Q(z)$, we can use the GQSP paper's Algorithm 1 to determine the phase angles $\theta_c$, $\phi_c$, and $\lambda_c$ for the rotation operator $R(\theta_c,\phi_c,\lambda_c)$ we need to apply for the $c^\mathrm{th}$ step of the interleaving process. Specifically, we use a for loop downward from $c = 2d$ to 0, updating the polynomials P(z) and Q(z) recursively toward lower maximum orders by applying the $c^\mathrm{th}$-order rotation operator to the matrix encoding the polynomial coefficients each time. For each run, we extract $\theta_c = \tan^{-1}(Q_c/P_c)$ and $\phi_c = \mathrm{phase}(P_c/Q_c)$. The value of $\lambda_c$ is 0 for all $c$ except $c = 0$, for which it becomes $\mathrm{phase}(Q_0)$:
+
+```python
+thetagqsp = np.zeros(2*d+1)
+phigqsp = np.zeros(2*d+1)
+lambdagqsp = np.zeros(2*d+1)
+
+pzlooped = padded_pz
+qzlooped = q_coefficients
+
+for c in range(2*d,-1,-1):
+    a = pzlooped[c]
+    b = qzlooped[c]
+    thetagqsp[c] = np.arctan(abs(b)/abs(a))
+    phigqsp[c] = np.angle(a/b)
+    if c == 0:
+        lambdagqsp[c] = np.angle(b)
+    else:
+        pzlooped = np.exp(1j*phigqsp[c])*np.cos(thetagqsp[c])*pzlooped + np.exp(1j*phigqsp[c])*np.sin(thetagqsp[c])*qzlooped
+        qzlooped = np.sin(thetagqsp[c])*pzlooped - np.cos(thetagqsp[c])*qzlooped
+```
+
+### Applying the GQSP Gates
