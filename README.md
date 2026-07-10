@@ -294,3 +294,138 @@ for kprime in range(d,2*d+1):
 ```
 
 ### Determining Q(z)
+
+To find the coefficients of $Q(z)$ (i.e., the complementary polynomial to $P(z)$), we use the complex polynomial code for the GQSP code file FindingQ.ipynb (https://github.com/Danimhn/GQSP-Code/blob/main/FindingQ.ipynb). The extra input array $x$ features the real and imaginary parts of a guess for the $Q(z)$ coefficients. The code then finds the distance of $|P(z)|^2 + |Q(z)|^2$ from 1, as well as the gradient of this distance over the elements of $x$. It adjusts the $x$ values accordingly until $|P(z)|^2 + |Q(z)|^2$ is within a negligible distance from 1. We modify the code to cut off the order of $Q$ at 64. To accommodate this, we also pad $P(z)$ with zeros up to that cutoff order:
+
+```python
+import torch
+from torch.nn.functional import conv1d, pad
+from torch.fft import fft
+from torchaudio.transforms import Convolve, FFTConvolve
+import time
+import numpy as np
+
+# Use CUDA if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+xarray = np.random.uniform(-0.1,0.1,4*d+2) # needs to be twice the size of P
+x = torch.from_numpy(xarray)
+
+def objective_torch(x, P):
+    x.requires_grad = True
+
+    real_part = x[:len(x) // 2]
+    imag_part = x[len(x) // 2:]
+
+    real_flip = torch.flip(real_part, dims=[0])
+    imag_flip = torch.flip(-1*imag_part, dims=[0])
+
+    conv_real_part = FFTConvolve("full").forward(real_part, real_flip)
+    conv_imag_part = FFTConvolve("full").forward(imag_part, imag_flip)
+
+    conv_real_imag = FFTConvolve("full").forward(real_part, imag_flip)
+    conv_imag_real = FFTConvolve("full").forward(imag_part, real_flip)
+
+    # Compute real and imaginary part of the convolution
+    real_conv = conv_real_part - conv_imag_part
+    imag_conv = conv_real_imag + conv_imag_real
+
+    # Combine to form the complex result
+    conv_result = torch.complex(real_conv, imag_conv)
+
+    # Compute loss using squared distance function
+    loss = torch.norm(P - conv_result)**2
+    return loss
+
+def complex_conv_by_flip_conj(x):
+    real_part = x.real
+    imag_part = x.imag
+
+    real_flip = torch.flip(real_part, dims=[0])
+    imag_flip = torch.flip(-1*imag_part, dims=[0])
+
+    conv_real_part = FFTConvolve("full").forward(real_part, real_flip)
+    conv_imag_part = FFTConvolve("full").forward(imag_part, imag_flip)
+
+    conv_real_imag = FFTConvolve("full").forward(real_part, imag_flip)
+    conv_imag_real = FFTConvolve("full").forward(imag_part, real_flip)
+
+    # Compute real and imaginary part of the convolution
+    real_conv = conv_real_part - conv_imag_part
+    imag_conv = conv_real_imag + conv_imag_real
+
+    # Combine to form the complex result
+    return torch.complex(real_conv, imag_conv)
+
+times = []
+final_vals = []
+num_iterations = []
+
+for k in range(4, 20):
+    N = 2 ** k
+    
+    if N > len(pz):
+        padded_pz = np.pad(pz, (0, N - len(pz)), 'constant')
+    else:
+        padded_pz = pz
+    poly = torch.from_numpy(padded_pz).to(device=device, dtype=torch.complex128)
+
+    granularity = 2 ** 25
+    P = pad(poly, (0, granularity - poly.shape[0]))
+    ft = fft(P)
+
+    # Normalize P
+    P_norms = ft.abs()
+    poly /= torch.max(P_norms)
+
+    conv_p_negative = complex_conv_by_flip_conj(poly)*-1
+    conv_p_negative[poly.shape[0] - 1] = 1 - torch.norm(poly) ** 2
+
+    # Initializing Q randomly to start with
+    initial = torch.randn(poly.shape[0]*2, device=device, requires_grad=True)
+    initial = (initial / torch.norm(initial)).clone().detach().requires_grad_(True)
+
+    optimizer = torch.optim.LBFGS([initial], max_iter=1000)
+
+    t0 = time.time()
+
+    def closure():
+        optimizer.zero_grad()
+        loss = objective_torch(initial, conv_p_negative)
+        loss.backward()
+        return loss
+
+    optimizer.step(closure)
+
+    t1 = time.time()
+
+    total = t1-t0
+    times.append(total)
+    final_vals.append(closure().item())
+    num_iterations.append(optimizer.state[optimizer._params[0]]['n_iter'])
+    print(f'N: {N}')
+    print(f'Time: {total}')
+    print(f'Final: {closure().item()}')
+    print(f"# Iterations: {optimizer.state[optimizer._params[0]]['n_iter']}")
+    print("-----------------------------------------------------")
+    
+    if N == 64:
+        
+        final_q = initial.detach().cpu().numpy()
+        
+        # Split it back into its real and imaginary parts to rebuild Q(z)
+        half = len(final_q) // 2
+        q_real = final_q[:half]
+        q_imag = final_q[half:]
+        q_coefficients = q_real + 1j * q_imag
+        
+        break
+
+print(times)
+print(final_vals)
+print(num_iterations)
+```
+
+### Calculating the Phase Angles
+
+Now that we have the coefficients for both $P(z)$ and $Q(z)$, we can use the GQSP paper's Algorithm 1 to determine which rotation operator we need to apply for every interleaving step. 
