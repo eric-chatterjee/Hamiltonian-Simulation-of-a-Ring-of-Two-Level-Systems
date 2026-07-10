@@ -74,3 +74,19 @@ qc.ch(n,n+1)
 <img width="255" height="947" alt="AfterFirstHadamardGate" src="https://github.com/user-attachments/assets/560100d4-58c0-4a38-a99f-f50dbe659ba4" />
 
 $\frac{1}{\sqrt{2}} \ket{000000}\ket{00010001} + \frac{1}{2} \ket{000001}\ket{00010001} + \frac{1}{2} \ket{000011}\ket{00010001}$
+
+The next step is to establish the individual strings for each string category. Here, we need enough ancillary bits to address every site in the physical ring. This explains why we defined $m = \lceil \log_2(n) \rceil$ above, with bits $n+2$ through $n+1+m$ serving to address individual data bits (corresponding to the individual sites). Since all $n$ strings for each given category feature the same amplitude, we apply Hadamard gates to this $m$-bit string:
+
+```python
+qc.h(range(n+2,n+m+2))
+```
+
+<img width="255" height="947" alt="AfterSecondHadamardGate" src="https://github.com/user-attachments/assets/05ab0c5d-4bfb-41f0-95f2-476e1f151af2" />
+
+$\frac{1}{4} \ket{000000}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000001}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000011}\ket{00010001} + \frac{1}{4} \ket{000100}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000101}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000111}\ket{00010001} + ... + \frac{1}{4\sqrt{2}} \ket{011001}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{011011}\ket{00010001} + \frac{1}{4} \ket{011100}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{011101}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{011111}\ket{00010001}$
+
+Note that we have so far only operated on the ancillas, with the state encoded by the data bits staying intact. The sub-processes above (specifically, rotation on the rightmost ancillary bit, control-Hadamard on the next ancillary bit conditioned on the rightmost ancillary bit, and Hadamard on the next m ancilla) thus represent a PREPARE operator, inducing the following mapping:
+
+$\ket{0} \otimes \ket{0}^{\otimes m} \ket{\psi} \rightarrow \ket{0} \otimes \Big(\sum_{l = 0}^{n-1} \ket{l}\Big) \otimes \ket{\psi}$,
+
+where $\ket{l}$ is the $m$-bit address fo the site $l$. 
