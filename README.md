@@ -20,9 +20,9 @@ where $a_l^{(\dagger)}$ is the annihilation (creation) operator for the site $l$
 
 We will represent the system using $n$ data bits, with the $l^\mathrm{th}$ bit (counting from right to left and zero-indexing) representing the state (ground = 0, excited = 1) of site $l$. For our example, we use $n = 8$:
 
-'''python
+```python
 n = 8
-'''
+```
 
 ## LCU: Block-Encoding the Hamiltonian
 
