@@ -453,3 +453,151 @@ for c in range(2*d,-1,-1):
 ```
 
 ### Applying the GQSP Gates
+
+So far in this section, all steps have been classical. Now that we know the desired phase angles for the rotation gates, we define the rotation gate generally and, for each step $c$ (ranging from 0 through $2d$), we alternatingly apply the anti-controlled $U$ (on all bits except the leftmost ancillary bit, but conditioned on that bit), followed by the rotation operator $R(\theta_c,\phi_c,\lambda_c)$ (on the leftmost bit):
+
+```python
+from qiskit.circuit.library import UnitaryGate
+
+def gqsprotationgate(theta, phi, lam):
+    matrix = np.array([
+        [np.exp(1j*(lam+phi))*np.cos(theta),  np.exp(1j*phi)*np.sin(theta)],
+        [np.exp(1j*lam)*np.sin(theta), -np.cos(theta)]
+    ], dtype=complex)
+    
+    return UnitaryGate(matrix)
+
+# Now, we apply the gates:
+
+for i in range(2*d+1):
+    
+    # First, we rerun all steps in the anti-controlled U:
+    
+    qc.ry(2*theta,n)
+    qc.ch(n,n+1)
+    qc.h(range(n+2,n+m+2))
+    
+    control_qubits = range(n,n+m+3)
+    
+    qc.x(n+m+2)
+
+    for site in range(n-1):
+
+        for k in range(m):
+            if np.mod(site,2**k) == 0:
+                qc.x(n+2+k)
+
+        qc.append(mcy_gate,list(control_qubits) + [site])
+        qc.append(mcy_gate,list(control_qubits) + [site+1])
+
+        qc.x(n+1)
+
+        qc.mcx(list(control_qubits),site)
+        qc.mcx(list(control_qubits),site+1)
+
+        qc.x(n)
+
+        qc.append(mcz_gate,list(control_qubits) + [site])
+
+    for site in range(n-1,n):
+
+        for k in range(m):
+            if np.mod(site,2**k) == 0:
+                qc.x(n+2+k)
+
+        qc.append(mcy_gate,list(control_qubits) + [site])
+        qc.append(mcy_gate,list(control_qubits) + [0])
+
+        qc.x(n+1)
+
+        qc.mcx(list(control_qubits),site)
+        qc.mcx(list(control_qubits),0)
+
+        qc.x(n)
+
+        qc.append(mcz_gate,list(control_qubits) + [site])
+
+    for site in range(n):
+        for k in range(m):
+            if np.mod(site,2**k) == 0:
+                qc.x(n+2+k)
+        qc.x(n+1)
+        qc.x(n)
+
+    qc.x(n+m+2)
+    
+    qc.h(range(n+2,n+m+2))
+    qc.ch(n,n+1)
+    qc.ry(-2*theta,n)
+    
+    # Next, we apply the rotation operator R(\theta_c,\phi_c,\lambda_c) on the leftmost ancillary bit.
+    
+    qc.append(gqsprotationgate(thetagqsp[i],phigqsp[i],lambdagqsp[i]),[n+m+2])
+```
+
+Note that if we had applied this to the initial state, we would be applying an extra anti-controlled $U$ at the beginning where we should instead be going straight to $R(\theta_0,\phi_0,\lambda_0)$. However, since we already applied the anti-controlled $U$ sequence in the previous section, we use the fact that $U$ is both unitary and Hermitian to cancel the previous sequence out. 
+
+Finally, we correct the range of orders of $U$ from $0,...,2d$ to $-d,...,d$. As previously mentioned, we resolve this by applying the anti-controlled $U^{-d}$ to the GQSP output state, which is equivalent to applying the anti-controlled $U^d$ due to the unitary and Hermitian nature of $U$:
+
+```python
+for i in range(d):
+    
+    qc.ry(2*theta,n)
+    qc.ch(n,n+1)
+    qc.h(range(n+2,n+m+2))
+    
+    control_qubits = range(n,n+m+3)
+    
+    qc.x(n+m+2)
+
+    for site in range(n-1):
+
+        for k in range(m):
+            if np.mod(site,2**k) == 0:
+                qc.x(n+2+k)
+
+        qc.append(mcy_gate,list(control_qubits) + [site])
+        qc.append(mcy_gate,list(control_qubits) + [site+1])
+
+        qc.x(n+1)
+
+        qc.mcx(list(control_qubits),site)
+        qc.mcx(list(control_qubits),site+1)
+
+        qc.x(n)
+
+        qc.append(mcz_gate,list(control_qubits) + [site])
+
+    for site in range(n-1,n):
+
+        for k in range(m):
+            if np.mod(site,2**k) == 0:
+                qc.x(n+2+k)
+
+        qc.append(mcy_gate,list(control_qubits) + [site])
+        qc.append(mcy_gate,list(control_qubits) + [0])
+
+        qc.x(n+1)
+
+        qc.mcx(list(control_qubits),site)
+        qc.mcx(list(control_qubits),0)
+
+        qc.x(n)
+
+        qc.append(mcz_gate,list(control_qubits) + [site])
+
+    for site in range(n):
+        for k in range(m):
+            if np.mod(site,2**k) == 0:
+                qc.x(n+2+k)
+        qc.x(n+1)
+        qc.x(n)
+
+    qc.x(n+m+2)
+    
+    qc.h(range(n+2,n+m+2))
+    qc.ch(n,n+1)
+    qc.ry(-2*theta,n)
+```
+
+We can find the result of time-evolving the initial state $\ket{\psi}$ by projecting the ancilla onto the vacuum state, requiring on the order of $2^{m+3}$ measurements. For a very large number of physical sites (equaling the number of data bits) $n$, the fact that $m$ scales logarithmically with $n$ implies that the number of required measurements is much less than the Hilbert space dimensionality $2^n$ of the physical system.
