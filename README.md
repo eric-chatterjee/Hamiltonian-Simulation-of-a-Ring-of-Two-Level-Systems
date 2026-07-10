@@ -196,7 +196,13 @@ Note that the data bits have changed, with the excited sites no longer being exc
 
 ## GQSP: From Hamiltonian to Propagator
 
-Having block-encoded the attenuated Hamiltonian $H' = H/\alpha$, we now seek to block-encode the propagator $e^{-iHt} = e^{-iH'\tau}$, where $\tau = \alpha t$, which in turn can be expanded in powers of $H'$. To that end, Generalized Quantum Signal Processing (https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.5.020368) provides an elegant tool for obtaining polynomials $P(H')$ of $H'$ without the need for the polynomial to have a well-defined parity. The method consists of interleaving the anti-controlled $U = (\mathrm{PREP})^{\dagger} (\mathrm{SELECT}) (\mathrm{PREP})$ (conditioned on the leftmost ancillary bit) with rotation operators on that ancillary bit. The key is to calculate the phase angles for the varios rotation operators, which requires significant classical pre-processing, as we will now solve.
+Having block-encoded the attenuated Hamiltonian $H' = H/\alpha$, we now seek to block-encode the propagator $e^{-iHt} = e^{-iH'\tau}$, where $\tau = \alpha t$, which in turn can be expanded in powers of $H'$. To that end, Generalized Quantum Signal Processing (https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.5.020368) provides an elegant tool for obtaining polynomials $P(H')$ of $H'$ without the need for the polynomial to have a well-defined parity. The method consists of first establishing the block-unitary $U$, which we did in the previous section:
+
+$$
+U = (\mathrm{PREP})^{\dagger} (\mathrm{SELECT}) (\mathrm{PREP}).
+$$
+
+The next step in the method is to apply the anti-controlled $U$ (conditioned on the leftmost ancillary bit) interleaved with rotation operators on that ancillary bit. The key is to calculate the phase angles for the varios rotation operators, which requires significant classical pre-processing, as we will now solve.
 
 ### Establishing Propagation Time and Polynomial Order
 
