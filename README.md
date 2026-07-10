@@ -110,3 +110,52 @@ qc.x(n+m+2)
 ```
 
 The strategy that we will use is to individually set each combination for the $m$-bit ancillary string addressing the physical site (i.e., bits $n+2$ through $n+m+1$) and the 2-bit ancillary string addressing the string type (i.e., bits $n$ and $n+1$) to all 1s, followed by applying the corresponding string to the data bits in a multi-controlled manner conditioned on all ancillary bits. To do this, we run a for loop over all possible combinations in the $m$-bit string, applying an $X$ gate to the $k^\mathrm{th}$ bit in that string (where we are zero-indexing and counting from right to left) every $2^k$ runs (since the $k^\mathrm{th}$ binary digit switches every $2^k$ counts). For a given run corresponding to site $l$, we first apply multi-controlled $Y$ gates to sites $l$ and $l+1$ (since the rightmost 2 ancilla being in the all-1 state corresponds to the $Y$ string type), then we apply the $X$ gate to flip the second-to-rightmost ancillary bit (i.e., bit $n+1$) and apply the multi-controlled $X$ gates to sites $l$ and $l+1$, and finally we apply the $X$ gate to flip the rightmost ancillary bit (i.e., bit $n$) and apply the multi-controlled $Z$ gates to site $l$. Note that we separate out the case $l = n$ from the main for loop, since $l+1 = 0$ in that case, not $n+1$:
+
+```python
+from qiskit.circuit.library import MCXGate
+from qiskit.circuit.library import YGate
+from qiskit.circuit.library import ZGate
+
+mcy_gate = YGate().control(m+3)
+mcz_gate = ZGate().control(m+3)
+
+control_qubits = range(n,n+m+3)
+
+for site in range(n-1): # This is not n, because we separately consider the (n-1)^st site and its coupling with the 0^th site
+    
+    for k in range(m):
+        if np.mod(site,2**k) == 0:
+            qc.x(n+2+k) # Maps m-bit ancillas marking the site to all 1s
+    
+    qc.append(mcy_gate,list(control_qubits) + [site]) # For the rightmost 2 ancillas, 11 represents the Y Pauli string category
+    qc.append(mcy_gate,list(control_qubits) + [site+1])
+    
+    qc.x(n+1) # Mapping 01 (corresponding to the X Pauli string category) to 11 for the rightmost 2 ancillas
+    
+    qc.mcx(list(control_qubits),site)
+    qc.mcx(list(control_qubits),site+1)
+    
+    qc.x(n) # Together with previous X gate, these map 00 (corresponding to the Z Pauli string category) to 11
+    
+    qc.append(mcz_gate,list(control_qubits) + [site])
+    
+# Now, we handle the n^{th} site
+
+for site in range(n-1,n):
+    
+    for k in range(m):
+        if np.mod(site,2**k) == 0:
+            qc.x(n+2+k)
+    
+    qc.append(mcy_gate,list(control_qubits) + [site])
+    qc.append(mcy_gate,list(control_qubits) + [0]) # Since the next site after n-1 is 0, not n
+    
+    qc.x(n+1)
+    
+    qc.mcx(list(control_qubits),site)
+    qc.mcx(list(control_qubits),0)
+    
+    qc.x(n)
+    
+    qc.append(mcz_gate,list(control_qubits) + [site])
+```
