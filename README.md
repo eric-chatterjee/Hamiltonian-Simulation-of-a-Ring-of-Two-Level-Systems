@@ -71,7 +71,6 @@ We have thus encoded the composite amplitude of the Z strings with the state $\k
 qc.ch(n,n+1)
 ```
 
-<img width="85" height="947" alt="AfterFirstHadamardGate" src="https://github.com/user-attachments/assets/ce870407-6bf4-4b8d-be93-37b391998e2a" />
-
+<img width="255" height="947" alt="AfterFirstHadamardGate" src="https://github.com/user-attachments/assets/560100d4-58c0-4a38-a99f-f50dbe659ba4" />
 
 $\frac{1}{\sqrt{2}} \ket{000000}\ket{00010001} + \frac{1}{2} \ket{000001}\ket{00010001} + \frac{1}{2} \ket{000011}\ket{00010001}$
