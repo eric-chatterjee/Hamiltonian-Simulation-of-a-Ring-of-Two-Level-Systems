@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib as mpl
 ```
 
-## Problem Statement and Hamiltonian Decomposition
+## Problem Statement and Hamiltonian Form
 
 We seek to simulate the time-evolution of $n$ 2-level sites (e.g. atoms with 2 energy levels, spins), each with energy gap $\hbar \omega$ in a ring with nearest-neighbor coupling $\hbar g$. For purposes of convenience, we will set $\hbar = 1$ throughout this process. If we set the reference energy to halfway between the ground and excited states for each site, then the Hamiltonian takes the following form:
 
@@ -17,6 +17,8 @@ H = \sum_{l = 0}^{n - 1} \bigg(\frac{\omega}{2} \Big(2 a_l^{\dagger} a_l - 1\Big
 $$
 
 where $a_l^{(\dagger)}$ is the annihilation (creation) operator for the site $l$. The first and second terms represent the self-energy of each site and the site-to-site coupling, respectively. Note that for $l = n-1$, the coupling with the site $l+1$ is actually with the $0^\mathrm{th}$ site, since the sites are organized in a ring. 
+
+## Establishing the Qubit Register
 
 We will represent the system using $n$ data bits, with the $l^\mathrm{th}$ bit (counting from right to left and zero-indexing) representing the state (ground = 0, excited = 1) of site $l$. For our example, we use $n = 8$:
 
@@ -193,37 +195,27 @@ Note that the data bits have changed, with the excited sites no longer being exc
 
 ## GQSP: From Hamiltonian to Propagator
 
-Having block-encoded the attenuated Hamiltonian $H' = H/\alpha$, we now seek to block-encode the propagator $e^{-iHt} = e^{-iH'\tau}$, where $\tau = \alpha t$. To that end, Generalized Quantum Signal Processing (GQSP) [#motlagh2024gqsp].
+Having block-encoded the attenuated Hamiltonian $H' = H/\alpha$, we now seek to block-encode the propagator $e^{-iHt} = e^{-iH'\tau}$, where $\tau = \alpha t$, which in turn can be expanded in powers of $H'$. To that end, Generalized Quantum Signal Processing (https://journals.aps.org/prxquantum/abstract/10.1103/PRXQuantum.5.020368) provides an elegant tool for obtaining polynomials $P(H')$ of $H'$ without the need for the polynomial to have a well-defined parity. The method consists of interleaving the anti-controlled $U = (\mathrm{PREP})^{\dagger} (\mathrm{SELECT}) (\mathrm{PREP})$ (conditioned on the leftmost ancillary bit) with rotation operators on that ancillary bit. The key is to calculate the phase angles for the varios rotation operators, which requires significant classical pre-processing, as we will now solve.
 
+### Establishing Propagation Time and Polynomial Order
 
+We first define $\tau$ (i.e., the time in units of $1/\alpha$) and the polynomial order cutoff $d$. For our example, we set $\tau$ to 10. For $d$, we use the relationship $d \sim \tau + \log{(1/\epsilon}/\log{\log(1/\epsilon)}$, where $\epsilon$ is the error tolerance. We set this error tolerance to $10^{-9}$ in our case:
 
+```python
+tau = 10
 
+epsilonerror = 10**(-9) # error tolerance
+epsiloninv = 1/epsilonerror
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-## References
-
-<a id="motlagh2024"></a> **Motlagh, D., & Wiebe, N. (2024).** "Generalized Quantum Signal Processing." *PRX Quantum*, 5, 020368. [https://doi.org](https://doi.org)
-
-```bibtex
-@article{motlagh2024gqsp,
-  author    = {Motlagh, D. and Wiebe, N.},
-  title     = {Generalized Quantum Signal Processing},
-  journal   = {PRX Quantum},
-  year      = {2024},
-  volume    = {5},
-  pages     = {020368},
-  doi       = {10.1103/PRXQuantum.5.020368}
-}
+d = int(np.ceil(tau + np.log(epsiloninv)/np.log(np.log(epsiloninv))))
 ```
+
+### Calculating Coefficients of P(x)
+
+We now seek to determine the coefficients of $P(x)$, where $x$ is any given eigenvalue of $H'$. The Jacobi-Anger expansion of the propagator takes the following form:
+
+$$
+e^{-ix\tau} = J_0(\tau) + 2 \sum_{k = 1}^\infty (-i)^k J_k(\tau) T_k(x),
+$$
+
+where J_k and T_k are the Bessel and Chebyshev polynomials of the first kind, respectively. To 
