@@ -247,7 +247,7 @@ for i in range(1,d+1):
 px = sum(pxhold[i] for i in range(d+1))
 ```
 
-# Converting from P(x) to P(z)
+### Converting from P(x) to P(z)
 
 In general, $|x| < 1$, since all values in the Hamiltonian (and hence its eigenvalues) are less than the attenuation factor $\alpha$. On the other hand, if we consider the operator $U$ in which $H/\alpha$ is block-encoded, the eigenvalues $z$ take the form $x \pm i\sqrt{1-x^2}$ (with the latter term coming from the off-diagonal block elements in $U$), implying that $z = e^{\pm i\theta}$, where $\theta = \cos^{-1}(x)$. It is therefore important to convert the array representing the polynomial $P$ from the $x$ basis to the $z$ basis, for which we make the substitution $x = (z + z^{-1})/2$, which yields:
 
@@ -293,4 +293,4 @@ for kprime in range(d,2*d+1):
     pz[kprime] = pzraw[k]
 ```
 
-# Determining Q(z)
+### Determining Q(z)
