@@ -53,10 +53,10 @@ $$
 As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. This form lends itself to block-encoding the Hamiltonian as the following:
 
 $$
-\ket{0}_\mathrm{ancilla} \bra{0}_\mathrm{ancilla} H \ket{\psi} = \bra{0}_\mathrm{ancilla} (\mathrm{PREP})^{\dagger} (\mathrm{SELECT}) (\mathrm{PREP}) \ket{0}_\mathrm{ancilla} \ket{0}_\mathrm{ancilla} \ket{\psi},
+\ket{0}_\mathrm{ancilla} \bra{0}_\mathrm{ancilla} H/\alpha \ket{\psi} = \bra{0}_\mathrm{ancilla} (\mathrm{PREP})^{\dagger} (\mathrm{SELECT}) (\mathrm{PREP}) \ket{0}_\mathrm{ancilla} \ket{0}_\mathrm{ancilla} \ket{\psi},
 $$
 
-where PREP converts the ancilla to the basis of desired strings and SELECT is a block-diagonal unitary that applies the desired string based on the ancilla values.
+where PREP converts the ancilla to the basis of desired strings, SELECT is a block-diagonal unitary that applies the desired string based on the ancilla values, and $\alpha$ is a scaling factor that keeps all elements of $H/\alpha$ below 1 (which will directly result from establishing the PREP gate, as will be shown below).
 
 ### Applying the PREP Gate
 
@@ -97,9 +97,9 @@ $\frac{1}{4} \ket{000000}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000001}\ket{0
 
 Note that we have so far only operated on the ancillas, with the state encoded by the data bits staying intact. The set of sub-processes above (specifically, rotation on the rightmost ancillary bit, control-Hadamard on the next ancillary bit conditioned on the rightmost ancillary bit, and Hadamard on the next m ancilla) thus induce the following mapping:
 
-$\ket{0} \otimes \ket{0}^{\otimes m} \otimes \ket{\psi} \rightarrow \frac{1}{\sqrt{2^m (\omega+ 2g)}} \ket{0} \otimes \Big(\sum_{l = 0}^{n-1} \ket{l}\Big) \otimes (\sqrt{\omega} \ket{00} + \sqrt{g} \ket{01} + \sqrt{g} \ket{11}) \otimes \ket{\psi}$,
+$\ket{0} \otimes \ket{0}^{\otimes m} \otimes \ket{\psi} \rightarrow \frac{1}{\sqrt{2^m (\omega + 2g)}} \ket{0} \otimes \Big(\sum_{l = 0}^{n-1} \ket{l}\Big) \otimes (\sqrt{\omega} \ket{00} + \sqrt{g} \ket{01} + \sqrt{g} \ket{11}) \otimes \ket{\psi}$,
 
-where $\ket{l}$ is the $m$-bit address for the site $l$.
+where $\ket{l}$ is the $m$-bit address for the site $l$. Note that the amplitude-squared of each $Z$ Pauli string is $\omega/(2^m (\omega + 2g))$, while the amplitude of each $X$ or $Y$ string is $g/(2^m (\omega + 2g))$. On the other hand, recall that the respective LCU coefficients in the Hamiltonian are $\omega/2$ and $\gamma/2$. As a result, the above-discussed attenuation coefficient in the block-encoding becomes $\alpha = 2^{m-1} (\omega + 2g)$.
 
 ### Applying the SELECT Gate
 
@@ -190,3 +190,38 @@ qc.ry(-2*theta,n)
 $\frac{1}{16} \ket{000000}\ket{00001001} + \frac{1}{4} \ket{000000}\ket{00010001} + \frac{1}{16} \ket{000000}\ket{00010010} - \frac{1}{16} \ket{000000}\ket{00010111} + \frac{1}{16} \ket{000000}\ket{00100001} - \frac{1}{16} \ket{000000}\ket{01110001} + ... + \frac{1}{16} \ket{011101}\ket{10010000} - \frac{1}{16} \ket{011110}\ket{00011101} + \frac{1}{16} \ket{011110}\ket{11010001} - \frac{1}{16} \ket{011111}\ket{00011101} + \frac{1}{16} \ket{011111}\ket{11010001}$
 
 Note that the data bits have changed, with the excited sites no longer being exclusively sites 0 and 4. Moreover, as desired, the leftmost ancillary bit for all states in this superposition is 0, thus enabling the block-encoding here to be used in the GQSP procedure.
+
+## GQSP: From Hamiltonian to Propagator
+
+Having block-encoded the attenuated Hamiltonian $H' = H/\alpha$, we now seek to block-encode the propagator $e^{-iHt} = e^{-iH'\tau}$, where $\tau = \alpha t$. To that end, Generalized Quantum Signal Processing (GQSP) [#motlagh2024gqsp].
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Citation
+
+```bibtex
+@article{motlagh2024gqsp,
+  author    = {Motlagh, D. and Wiebe, N.},
+  title     = {Generalized Quantum Signal Processing},
+  journal   = {PRX Quantum},
+  year      = {2024},
+  volume    = {5},
+  pages     = {020368},
+  doi       = {10.1103/PRXQuantum.5.020368}
+}
+```
