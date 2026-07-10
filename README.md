@@ -53,7 +53,7 @@ $$
 As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. This form lends itself to block-encoding the Hamiltonian as the following:
 
 $$
-\ket{0}_\mathrm{ancilla} \bra_{0}_\mathrm{ancilla} H \ket{\psi} = 
+\ket{0}_\mathrm{ancilla} \bra{0}_\mathrm{ancilla}
 $$
 
 where PREP converts the ancilla to the basis of desired strings and SELECT is a block-diagonal unitary that applies the desired string based on the ancilla values.
