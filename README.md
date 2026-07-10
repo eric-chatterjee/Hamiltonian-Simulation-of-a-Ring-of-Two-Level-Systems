@@ -159,3 +159,34 @@ for site in range(n-1,n):
     
     qc.append(mcz_gate,list(control_qubits) + [site])
 ```
+
+Since the SELECT operator is only supposed to apply to the data bits, with the ancilla just serving as controls, we need to revert the ancilla upon which we applied $X$ gates in this sequence. To do so, we simply rerun all of the ancillary-bit-flip operations in the above sequence, ensuring that in the overall SELECT operation, every ancillary bit has an even number of $X$ gates applied to it and thus remains unchanged:
+
+```python
+for site in range(n):
+    for k in range(m):
+        if np.mod(site,2**k) == 0:
+            qc.x(n+2+k) # Reverts the m-bit register
+    qc.x(n+1) # This and the next operation revert the rightmost 2 ancillas
+    qc.x(n)
+    
+qc.x(n+m+2) # Reverting the lefmost ancilla
+```
+
+### Applying the Inverse PREP Gate
+
+Finally, we apply $\mathrm{PREP}^{\dagger}$ by reversing the gates in PREP and taking the adjoint of each gate. Conveniently, all gates here are Hermitian except the rotation gate, for which the adjoint simply involves flipping the rotation angle:
+
+```python
+qc.h(range(n+2,n+m+2))
+
+qc.ch(n,n+1)
+
+qc.ry(-2*theta,n)
+```
+
+<img width="1736" height="2878" alt="AfterU" src="https://github.com/user-attachments/assets/8aa0da0f-bc9e-4294-a118-80b83cb3044b" />
+
+$\frac{1}{16} \ket{000000}\ket{00001001} + \frac{1}{4} \ket{000000}\ket{00010001} + \frac{1}{16} \ket{000000}\ket{00010010} - \frac{1}{16} \ket{000000}\ket{00010111} + \frac{1}{16} \ket{000000}\ket{00100001} - \frac{1}{16} \ket{000000}\ket{01110001} + ... + \frac{1}{16} \ket{011101}\ket{10010000} - \frac{1}{16} \ket{011110}\ket{00011101} + \frac{1}{16} \ket{011110}\ket{11010001} - \frac{1}{16} \ket{011111}\ket{00011101} + \frac{1}{16} \ket{011111}\ket{11010001}$
+
+Note that the data bits have changed, with the excited sites no longer being exclusively sites 0 and 4. Moreover, as desired, the leftmost ancillary bit for all states in this superposition is 0, thus enabling the block-encoding here to be used in the GQSP procedure.
