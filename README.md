@@ -50,7 +50,11 @@ $$
 H = \frac{1}{2} \sum_{l = 0}^{n - 1} \Big(Z_l + X_l X_{l+1} + Y_l Y_{l+1}\Big).
 $$
 
-As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. The amplitudes (square-root of the coefficients) corresponding to these string categories are proportional to $\sqrt{\omega}$, $\sqrt{g}$, and $\sqrt{g}$, respectively. We use the rightmost 2 ancillary bits to represent the string categories, with $\ket{00} \leftrightarrow Z$, $\ket{01} \leftrightarrow X$, and $\ket{11} \leftrightarrow Y$. If we just consider the rightmost bit (i.e., bit $n$), we thus need an amplitude proportional to $\sqrt{\omega}$ and $\sqrt{2g}$ for the states $\ket{0} and $\ket{1}, respectively. This is encoded by applying the rotation operator $R_Y(2\theta)$, where $\theta = \cos^{-1}(\sqrt{\omega}/\sqrt{\omega + 2g})$, on the rightmost bit. For our case, we define $\omega = 10^{10} \textrm{ s}^{-1}$ and $g = 5 \times 10^9 \textrm{ s}^{-1}$:
+As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. This form lends itself to expressing the Hamiltonian as $H = (\mathrm{PREP}^{\dagger}) (\mathrm{SELECT}) (\mathrm{PREP})$, where PREP converts the ancilla to the basis of desired strings and SELECT is a block-diagonal unitary that applies the desired string based on the ancilla values.
+
+### Applying the PREP Gate
+
+The amplitudes (square-root of the coefficients) corresponding to the string categories are proportional to $\sqrt{\omega}$, $\sqrt{g}$, and $\sqrt{g}$, respectively. We use the rightmost 2 ancillary bits to represent the string categories, with $\ket{00} \leftrightarrow Z$, $\ket{01} \leftrightarrow X$, and $\ket{11} \leftrightarrow Y$. If we just consider the rightmost bit (i.e., bit $n$), we thus need an amplitude proportional to $\sqrt{\omega}$ and $\sqrt{2g}$ for the states $\ket{0} and $\ket{1}, respectively. This is encoded by applying the rotation operator $R_Y(2\theta)$, where $\theta = \cos^{-1}(\sqrt{\omega}/\sqrt{\omega + 2g})$, on the rightmost bit. For our case, we define $\omega = 10^{10} \textrm{ s}^{-1}$ and $g = 5 \times 10^9 \textrm{ s}^{-1}$:
 
 ```python
 w = 10**10 # self-energy of each site
@@ -85,8 +89,12 @@ qc.h(range(n+2,n+m+2))
 
 $\frac{1}{4} \ket{000000}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000001}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000011}\ket{00010001} + \frac{1}{4} \ket{000100}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000101}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000111}\ket{00010001} + ... + \frac{1}{4\sqrt{2}} \ket{011001}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{011011}\ket{00010001} + \frac{1}{4} \ket{011100}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{011101}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{011111}\ket{00010001}$
 
-Note that we have so far only operated on the ancillas, with the state encoded by the data bits staying intact. The sub-processes above (specifically, rotation on the rightmost ancillary bit, control-Hadamard on the next ancillary bit conditioned on the rightmost ancillary bit, and Hadamard on the next m ancilla) thus represent a PREPARE operator, inducing the following mapping:
+Note that we have so far only operated on the ancillas, with the state encoded by the data bits staying intact. The set of sub-processes above (specifically, rotation on the rightmost ancillary bit, control-Hadamard on the next ancillary bit conditioned on the rightmost ancillary bit, and Hadamard on the next m ancilla) thus induce the following mapping:
 
-$\ket{0} \otimes \ket{0}^{\otimes m} \ket{\psi} \rightarrow \ket{0} \otimes \Big(\sum_{l = 0}^{n-1} \ket{l}\Big) \otimes \ket{\psi}$,
+$\ket{0} \otimes \ket{0}^{\otimes m} \otimes \ket{\psi} \rightarrow \frac{1}{\sqrt{2^m (\omega+ 2g)}} \ket{0} \otimes \Big(\sum_{l = 0}^{n-1} \ket{l}\Big) \otimes (\sqrt{\omega} \ket{00} + \sqrt{g} \ket{01} + \sqrt{g} \ket{11}) \otimes \ket{\psi}$,
 
-where $\ket{l}$ is the $m$-bit address fo the site $l$. 
+where $\ket{l}$ is the $m$-bit address for the site $l$.
+
+### Applying the SELECT Gate
+
+Now that each ancillary bit combination represents a unique string, we are ready to use the SELECT gate. Broadly, this consists of applying the individual strings on the data-bit string $\ket{\psi}$, with the exact string being determined by the ancilla. 
