@@ -45,6 +45,8 @@ qc.x(4)
 
 $\ket{000000}\ket{00010001}$
 
+As desired, the initial state here features a vacuum ancilla register but excited 0th and 4th data bits, corresponding to the 0th and 4th sites being excited in the physical system.
+
 ## LCU: Block-Encoding the Hamiltonian
 
 The key step in the simulation process will be to block-encode the Hamiltonian into a unitary operator, which will require us to decompose the Hamiltonian into a linear combination of unitaries (LCU). To that end, the nature of $H$ lends itself to decomposition into a linear combination of Pauli strings:
