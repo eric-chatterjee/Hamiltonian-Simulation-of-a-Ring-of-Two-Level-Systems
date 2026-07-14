@@ -102,6 +102,8 @@ qc.h(range(n+2,n+m+2))
 
 $\frac{1}{4} \ket{000000}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000001}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000011}\ket{00010001} + \frac{1}{4} \ket{000100}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000101}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{000111}\ket{00010001} + ... + \frac{1}{4\sqrt{2}} \ket{011001}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{011011}\ket{00010001} + \frac{1}{4} \ket{011100}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{011101}\ket{00010001} + \frac{1}{4\sqrt{2}} \ket{011111}\ket{00010001}$
 
+For each string category, there are 8 strings (corresponding to the 8 sites in our example), resulting in an amplitude of $(1/\sqrt{2})/\sqrt{8} = 1/4$ for each $Z$ string and $(1/2)/\sqrt{8} = 1/(4\sqrt{2})$ for each $X$ string and each $Y$ string. 
+
 Note that we have so far only operated on the ancillas, with the state encoded by the data bits staying intact. The set of sub-processes above (specifically, rotation on the rightmost ancillary bit, control-Hadamard on the next ancillary bit conditioned on the rightmost ancillary bit, and Hadamard on the next m ancilla) thus induce the following mapping:
 
 $\ket{0} \otimes \ket{0}^{\otimes m} \otimes \ket{\psi} \rightarrow \frac{1}{\sqrt{2^m (\omega + 2g)}} \ket{0} \otimes \Big(\sum_{l = 0}^{n-1} \ket{l}\Big) \otimes (\sqrt{\omega} \ket{00} + \sqrt{g} \ket{01} + \sqrt{g} \ket{11}) \otimes \ket{\psi}$,
