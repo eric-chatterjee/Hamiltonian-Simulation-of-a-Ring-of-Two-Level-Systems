@@ -90,6 +90,8 @@ qc.ch(n,n+1)
 
 $\frac{1}{\sqrt{2}} \ket{000000}\ket{00010001} + \frac{1}{2} \ket{000001}\ket{00010001} + \frac{1}{2} \ket{000011}\ket{00010001}$
 
+Note that the coefficient for the state where the last 2 ancilla are $\ket{00}$ (corresponding to the $Z$ string category) is $\sqrt{2}$ times greater than the coefficients for $\ket{01}$ ($X$ category) and $\ket{11}$ ($Y$ category), implying an amplitude-squared for the $Z$ strings that is twice that of each of the other two string categories. This is because given our example parameters, $\omega$ (which is proportional to the $Z$ string category weight) is twice the value of $g$ (which is proportional to $X$ and $Y$ string categories each).
+
 The next step is to establish the individual strings for each string category. Here, we need enough ancillary bits to address every site in the physical ring. This explains why we defined $m = \lceil \log_2(n) \rceil$ above, with bits $n+2$ through $n+1+m$ serving to address individual data bits (corresponding to the individual sites). Since all $n$ strings for each given category feature the same amplitude, we apply Hadamard gates to this $m$-bit string:
 
 ```python
