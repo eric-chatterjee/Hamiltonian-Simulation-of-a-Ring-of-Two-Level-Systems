@@ -65,7 +65,7 @@ where PREP converts the ancilla to the basis of desired strings, SELECT is a blo
 
 ### Applying the PREP Gate
 
-The amplitudes (square-root of the coefficients) corresponding to the string categories are proportional to $\sqrt{\omega}$, $\sqrt{g}$, and $\sqrt{g}$, respectively. We use the rightmost 2 ancillary bits to represent the string categories, with $\ket{00} \leftrightarrow Z$, $\ket{01} \leftrightarrow X$, and $\ket{11} \leftrightarrow Y$. If we just consider the rightmost bit (i.e., bit $n$), we thus need an amplitude proportional to $\sqrt{\omega}$ and $\sqrt{2g}$ for the states $\ket{0} and $\ket{1}$, respectively. This is encoded by applying the rotation operator $R_Y(2\theta)$, where $\theta = \cos^{-1}(\sqrt{\omega}/\sqrt{\omega + 2g})$, on the rightmost bit. For our case, we define $\omega = 10^{10} \textrm{ s}^{-1}$ and $g = 5 \times 10^9 \textrm{ s}^{-1}$:
+The amplitudes (square-root of the coefficients) corresponding to the string categories are proportional to $\sqrt{\omega}$, $\sqrt{g}$, and $\sqrt{g}$, respectively. We use the rightmost 2 ancillary bits to represent the string categories, with $\ket{00} \leftrightarrow Z$, $\ket{01} \leftrightarrow X$, and $\ket{11} \leftrightarrow Y$. If we just consider the rightmost bit (i.e., bit $n$), we thus need an amplitude proportional to $\sqrt{\omega}$ and $\sqrt{2g}$ for the states $\ket{0}$ and $\ket{1}$, respectively. This is encoded by applying the rotation operator $R_Y(2\theta)$, where $\theta = \cos^{-1}(\sqrt{\omega}/\sqrt{\omega + 2g})$, on the rightmost bit. For our case, we define $\omega = 10^{10} \textrm{ s}^{-1}$ and $g = 5 \times 10^9 \textrm{ s}^{-1}$:
 
 ```python
 w = 10**10 # self-energy of each site
