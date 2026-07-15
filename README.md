@@ -52,7 +52,7 @@ As desired, the initial state here features a vacuum ancilla register but excite
 The key step in the simulation process will be to block-encode the Hamiltonian into a unitary operator, which will require us to decompose the Hamiltonian into a linear combination of unitaries (LCU). To that end, the nature of $H$ lends itself to decomposition into a linear combination of Pauli strings:
 
 $$
-H = \frac{1}{2} \sum_{l = 0}^{n - 1} \Big(Z_l + X_l X_{l+1} + Y_l Y_{l+1}\Big).
+H = \frac{1}{2} \sum_{l = 0}^{n - 1} \Big(\omega Z_l + g X_l X_{l+1} + g Y_l Y_{l+1}\Big).
 $$
 
 As this expression shows, $H$ is composed of $3n$ Pauli strings: $n$ strings of each of 3 categories: $Z_l$, $X_l X_{l+1}$, and $Y_l Y_{l+1}$. This form lends itself to block-encoding the Hamiltonian as the following:
